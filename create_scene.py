@@ -66,8 +66,21 @@ def main():
     save_polygons_to_file(polygons, filename)
 
     loaded_polygons = load_polygons_from_file(filename)
+
+    for polygon in loaded_polygons:
+        print(repr(polygon), end=' ')
+    print()
     plot_polygons(loaded_polygons)
 
 
 if __name__ == "__main__":
     main()
+
+
+# Sample test case
+# Total number of polygons in the scene P: 3
+# Minimum number of vertices N_min: 3
+# Maximum number of vertices N_max: 6
+# Minimum radius of the polygon r_min: 5.0
+# Maximum radius of the polygon r_max: 10.0
+# Filename to save/load polygons: polygons.npy
