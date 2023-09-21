@@ -1,8 +1,15 @@
 # this is a python script to test the npz file
-from PIL import Image
+
 import numpy as np
 
-data = np.load(r'C:\Users\puran\PycharmProjects\CS460Assignment1\test.npz',
-allow_pickle=True)
+filename = r'C:\Users\puran\PycharmProjects\CS460Assignment1\polytest.npz'
+data = np.load(filename, allow_pickle=True)
 
-print(data)
+print("Keys in the file:", data.files)  # To list out all the keys in the npz file
+
+polygons = []
+
+for key in data.files:
+    polygon = data[key]
+    polygons.append(polygon)
+    print(repr(polygon))  # Printing each polygon

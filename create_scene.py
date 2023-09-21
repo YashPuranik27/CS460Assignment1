@@ -46,11 +46,14 @@ def load_polygons_from_file(filename):
 
 
 def plot_polygons(polygons):
-    plt.figure(figsize=(10, 10))
+    plt.figure(figsize=(8, 8))  # set the size of the figure, 1 unit will be represented by 400 pixels
+    plt.axis('equal')  # to keep the aspect ratio of the polygons
+
     for polygon in polygons:
         polygon = np.concatenate((polygon, [polygon[0]]), axis=0)  # close the polygon
         xs, ys = zip(*polygon)
         plt.plot(xs, ys)
+
     plt.show()
 
 
@@ -68,6 +71,7 @@ def main():
     loaded_polygons = load_polygons_from_file(filename)
 
     for polygon in loaded_polygons:
+        # print("Generated Polygon:", polygon)
         print(repr(polygon), end=' ')
     print()
     plot_polygons(loaded_polygons)
