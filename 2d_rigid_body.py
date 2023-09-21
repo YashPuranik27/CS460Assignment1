@@ -13,13 +13,36 @@ from scipy.spatial import ConvexHull
 import matplotlib.pyplot as plt
 
 
+# function to generate a complex polygon we could create a list, and it can choose a random polygon center we could
+# have a for loop, and we could use math.random or something of the sort to generate a random number of vertices we
+# could use a for loop to generate a random radius for each vertex
+
 def generate_convex_polygon(P, N_min, N_max, r_min, r_max):
     polygons = []
 
 
+def save_polygons_to_file(polygons, filename):
+    np.save(filename, polygons)
+
+
+def load_polygons_from_file(filename):
+    return np.load(filename, allow_pickle=True).tolist()
+
+
+# add a function to plot the polygons
+
 
 def main():
+    P = int(input("Enter the total number of polygons in the scene (P): "))
+    N_min = int(input("Enter the minimum number of vertices (N_min): "))
+    N_max = int(input("Enter the maximum number of vertices (N_max): "))
+    r_min = float(input("Enter the minimum radius of the polygon (r_min): "))
+    r_max = float(input("Enter the maximum radius of the polygon (r_max): "))
+    filename = input("Enter the filename to save/load polygons (without extension): ") + '.npy'
 
+    # save polygons to file. Should refer to def save_polygons_to_file(polygons, filename)
+
+    # load polygons from file. Should refer to def load_polygons_from_file(filename)
 
 
 if __name__ == "__main__":
