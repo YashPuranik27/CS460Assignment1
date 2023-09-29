@@ -38,3 +38,5 @@ if collide:
 else:
     ax.set_title("Bounding boxes don't collide")
 plt.show()
+
+
