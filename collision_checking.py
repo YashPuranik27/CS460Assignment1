@@ -4,6 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 
+
 # read polygon info from file
 def load_polygons_from_file(filename):
     with np.load(filename, allow_pickle=True) as data:
@@ -22,7 +23,27 @@ def collides(polygon1, polygon2):
 
     return result
 
-def plot(polygon1, polygon2, check_result):
+
+def plot(polygons, polygons_state):
+    # Visualization
+    fig, ax = plt.subplots(dpi=100)
+    ax.set_aspect('equal')
+
+    # Draw polygons
+    i=0
+    for polygon in polygons:
+        # print("Generated Polygon:", polygon)
+        if (polygons_state[i] == True):
+            ax.fill(polygon[:, 0], polygon[:, 1], 'r', alpha=0.5)
+        else:
+            ax.fill(polygon[:, 0], polygon[:, 1], 'b', alpha=0.5)
+        i=i+1
+
+    plt.show()
+
+
+
+def plot_old(polygon1, polygon2, check_result):
     # Visualization
     fig, ax = plt.subplots(dpi=100)
     ax.set_aspect('equal')
@@ -51,19 +72,36 @@ def plot(polygon1, polygon2, check_result):
     plt.show()
 
 def main():
-    polygons = load_polygons_from_file("polygons.npz")
+    polygons_state = []
+
+    polygons = load_polygons_from_file("collision_checking_polygons.npz")
     for polygon in polygons:
         # print("Generated Polygon:", polygon)
         print(repr(polygon), end=' ')
-    print()
+        polygons_state.append(False)
 
-    polygon1 = np.array(polygons[0])
-    polygon2 = np.array(polygons[1])
+    #print("num of poly "+str(polygon.ndim))
 
-    check_result = collides(polygon1, polygon2)
+    #poly1 = polygons[0]
+    #poly2 = polygons[1]
+    for i in range(len(polygons)-1):
+        poly1 = polygons[i]
+        print("poly1 -- " + str(i))
+        for j in range(i + 1, len(polygons)-1):
+            poly2 = polygons[j]
+            print("poly2 -- " + str(j))
+            check_result = collides(poly1, poly2)
+            #plot(poly1, poly2, check_result)
+            if polygons_state[i] == False:
+                polygons_state[i] = check_result
+            if polygons_state[j] == False:
+                polygons_state[i] = check_result
 
-    plot(polygon1, polygon2, check_result)
 
+    for i in range(len(polygons)):
+        print("poly state  " + str(i) + str(polygons_state[i]))
+
+    plot(polygons, polygons_state)
 
 
 if __name__ == "__main__":
