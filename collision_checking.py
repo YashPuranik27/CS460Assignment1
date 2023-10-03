@@ -1,3 +1,69 @@
+import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib.patches import Polygon
+from matplotlib.collections import PatchCollection
+from scipy.spatial import ConvexHull
+
+
+def collides(poly1, poly2):
+    # Compute the Minkowski sum of poly1 and -poly2
+    minkowski_sum = []
+    for v1 in poly1:
+        for v2 in poly2:
+            minkowski_sum.append(v1 - v2)
+
+    # Compute the convex hull of the Minkowski sum
+    hull = ConvexHull(minkowski_sum)
+    minkowski_hull = np.array([minkowski_sum[vertex] for vertex in hull.vertices])
+
+    # Check if the origin is in the Minkowski sum by checking it against each triangle formed by adjacent vertices of
+    # the convex hull
+    for i in range(len(minkowski_hull)):
+        v1 = minkowski_hull[i]
+        v2 = minkowski_hull[(i + 1) % len(minkowski_hull)]
+        v3 = np.array([0, 0])
+
+        # Barycentric coordinate system
+        det_t = np.linalg.det([[v1[0] - v2[0], v1[0] - v3[0]], [v1[1] - v2[1], v1[1] - v3[1]]])
+        alpha = np.linalg.det([[v2[0] - v3[0], v1[0] - v3[0]], [v2[1] - v3[1], v1[1] - v3[1]]]) / det_t
+        beta = np.linalg.det([[v1[0] - v3[0], v2[0] - v3[0]], [v1[1] - v3[1], v2[1] - v3[1]]]) / det_t
+        gamma = 1 - alpha - beta
+
+        if 0 <= alpha <= 1 and 0 <= beta <= 1 and 0 <= gamma <= 1:
+            return True
+
+    return False
+
+
+def plot(polys):
+    fig, ax = plt.subplots(dpi=100)
+    ax.set_aspect('equal')
+
+    for poly in polys:
+        polygon = Polygon(poly, fill=None, edgecolor='r', closed=True)
+        ax.add_patch(polygon)
+
+    plt.show()
+
+
+def main():
+    filename = input("Enter the filename of the .npy file containing polygons: ")
+    polygons = np.load(filename, allow_pickle=True)
+
+    collision_pairs = []
+    for i, poly1 in enumerate(polygons):
+        for j, poly2 in enumerate(polygons):
+            if i < j and collides(poly1,
+                                  poly2):  # Avoid checking collision between the same polygons and double-checking
+                # pairs
+                collision_pairs.append((i, j))
+
+    print(f"Collision pairs: {collision_pairs}")
+    plot(polygons)
+
+
+if __name__ == "__main__":
+    main()
 # Collision checking between convex polygons
 
 import numpy as np

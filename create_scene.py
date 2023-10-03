@@ -1,11 +1,11 @@
-import numpy as np
+
 # from PIL import Image
 
 # data = np.load(r'C:\Users\puran\Downloads\assignment1_student-1\assignment1_student\collision_checking_polygons.npy',
 # allow_pickle=True)
 
 # print(data)
-
+import numpy as np
 import random
 import math
 from scipy.spatial import ConvexHull
@@ -37,12 +37,12 @@ def generate_convex_polygon(P, N_min, N_max, r_min, r_max):
 def save_polygons_to_file(polygons, filename):
     # Convert list of polygons to a list of np arrays
     np_polygons = [np.array(polygon) for polygon in polygons]
-    np.savez(filename, *np_polygons)
+    # Combine all polygons into a single numpy array and save as .npy
+    np.save(filename, np.array(np_polygons, dtype=object))
 
 
 def load_polygons_from_file(filename):
-    with np.load(filename, allow_pickle=True) as data:
-        return [data[arr] for arr in data]
+    return np.load(filename, allow_pickle=True)
 
 
 def plot_polygons(polygons):
@@ -63,7 +63,7 @@ def main():
     N_max = int(input("Enter the maximum number of vertices (N_max): "))
     r_min = float(input("Enter the minimum radius of the polygon (r_min): "))
     r_max = float(input("Enter the maximum radius of the polygon (r_max): "))
-    filename = input("Enter the filename to save/load polygons (without extension): ") + '.npz'
+    filename = input("Enter the filename to save/load polygons (without extension): ") + '.npy'  # Note the file extension change
 
     polygons = generate_convex_polygon(P, N_min, N_max, r_min, r_max)
     save_polygons_to_file(polygons, filename)

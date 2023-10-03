@@ -2,7 +2,7 @@
 
 import numpy as np
 
-filename = r'C:\Users\puran\PycharmProjects\CS460Assignment1\polytest.npz'
+filename = r'C:\Users\puran\PycharmProjects\CS460Assignment1\test.npz'
 data = np.load(filename, allow_pickle=True)
 
 print("Keys in the file:", data.files)  # To list out all the keys in the npz file
