@@ -14,7 +14,7 @@ class RigidBody:
         self.fig, self.ax = plt.subplots()
         self.ax.set_xlim([0, 2])
         self.ax.set_ylim([0, 2])
-        self.car = patches.Rectangle((0.5, 0.5), 0.1, 0.05, angle=0, edgecolor='black', facecolor='red')
+        self.car = patches.Rectangle((0.5, 0.5), 0.1, 0.05, angle=0, edgecolor='black', facecolor='white')
         self.ax.add_patch(self.car)
         self.obstacles = collision_checking.load_polygons_from_file('2d_rigid_body.npy')
         for ob in self.obstacles:
@@ -69,13 +69,16 @@ class RigidBody:
                 collision = True
                 break
 
-        if 0 <= new_x <= 1.9 and 0 <= new_y <= 1.95 and not collision:
-            self.car.set_x(new_x)
-            self.car.set_y(new_y)
-            self.car.angle = new_angle
+        # Always update position and angle, regardless of potential collision
+        self.car.set_x(new_x)
+        self.car.set_y(new_y)
+        self.car.angle = new_angle
+
+        # Change color only based on collision status
+        if collision:
             self.car.set_facecolor("red")
         else:
-            self.car.set_facecolor([random.random(), random.random(), random.random()])
+            self.car.set_facecolor("white")
 
         self.fig.canvas.draw()
 
