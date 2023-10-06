@@ -5,7 +5,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 from matplotlib import animation
-import collision_checking  # Assuming collision_checking.py is in the same directory
+import collision_checking
 import random
 
 
