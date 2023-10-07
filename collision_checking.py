@@ -79,9 +79,14 @@ def plot(polygons, polygons_state):
     for polygon in polygons:
         # print("Generated Polygon:", polygon)
         if (polygons_state[i] == True):
+            # fill the polygon
             ax.fill(polygon[:, 0], polygon[:, 1], 'r', alpha=0.5)
         else:
-            ax.fill(polygon[:, 0], polygon[:, 1], 'b', alpha=0.5)
+            # only draw the border
+            #ax.fill(polygon[:, 0], polygon[:, 1], 'b', alpha=0.5)
+            polygon = np.concatenate((polygon, [polygon[0]]), axis=0)  # close the polygon
+            xs, ys = zip(*polygon)
+            plt.plot(xs, ys)
         i=i+1
 
     plt.show()
