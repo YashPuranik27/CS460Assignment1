@@ -10,7 +10,7 @@ def load_polygons_from_file(filename):
     return [data[i] for i in range(len(data))]
 
 
-def collides(polygon1, polygon2):
+def collides_bounding_box(polygon1, polygon2):
     # Calculate bounding boxes
     min1, max1 = np.min(polygon1, axis=0), np.max(polygon1, axis=0)
     min2, max2 = np.min(polygon2, axis=0), np.max(polygon2, axis=0)
@@ -21,6 +21,52 @@ def collides(polygon1, polygon2):
     result = collide_x and collide_y
 
     return result
+
+
+def get_occupied_cells(polygon, grid_size):
+    # Return cells occupied by the polygon
+    min_coords = np.min(polygon, axis=0)
+    max_coords = np.max(polygon, axis=0)
+
+    min_cell = np.floor(min_coords / grid_size).astype(int)
+    max_cell = np.floor(max_coords / grid_size).astype(int)
+
+    occupied_cells = []
+    for i in range(min_cell[0], max_cell[0] + 1):
+        for j in range(min_cell[1], max_cell[1] + 1):
+            occupied_cells.append((i, j))
+
+    return occupied_cells
+
+
+def collides_SAT(polygons, polygon_state):
+
+    # Grid configuration
+    grid_size = 2  # Size of each grid cell
+
+    # Map polygons to grid cells
+    grid = {}
+    for idx, polygon in enumerate(polygons):
+        if polygon_state[idx] == True:
+            polygon_state[idx] = False  # reset the state to False
+            for cell in get_occupied_cells(polygon, grid_size):
+                if cell not in grid:
+                    grid[cell] = []
+                grid[cell].append(idx)
+
+    # Check for collisions based on grid occupancy
+    #colliding_pairs = set()
+    for cell, occupants in grid.items():
+        if len(occupants) > 1:
+            for i in range(len(occupants)):
+                for j in range(i + 1, len(occupants)):
+                    #colliding_pairs.add((occupants[i], occupants[j]))
+                    polygon_state[occupants[i]]=True
+                    polygon_state[occupants[j]] = True
+
+    #print("colliding pairs:", colliding_pairs)
+
+
 
 
 def plot(polygons, polygons_state):
@@ -73,7 +119,7 @@ def plot_old(polygon1, polygon2, check_result):
 def main():
     polygons_state = []
 
-    polygons = load_polygons_from_file(r'C:\Users\puran\PycharmProjects\CS460Assignment1\collision_checking_polygons.npy')
+    polygons = load_polygons_from_file(r'E:\Alex\CS460Assignment1\collision_checking_polygons.npy')
     for polygon in polygons:
         # print("Generated Polygon:", polygon)
         print(repr(polygon), end=' ')
@@ -83,19 +129,25 @@ def main():
 
     #poly1 = polygons[0]
     #poly2 = polygons[1]
+
+    # fist pass bounding box checking
     for i in range(len(polygons)-1):
         poly1 = polygons[i]
         print("poly1 -- " + str(i))
         for j in range(i + 1, len(polygons)-1):
             poly2 = polygons[j]
             print("poly2 -- " + str(j))
-            check_result = collides(poly1, poly2)
+            check_result = collides_bounding_box(poly1, poly2)
             #plot(poly1, poly2, check_result)
-            if polygons_state[i] == False:
-                polygons_state[i] = check_result
-            if polygons_state[j] == False:
-                polygons_state[i] = check_result
 
+            if check_result == True:
+                polygons_state[i] = True
+                polygons_state[j] = True
+
+    # second pass SAT　Checking
+
+    polygons_pair=[]
+    collides_SAT(polygons, polygons_state)
 
     for i in range(len(polygons)):
         print("poly state  " + str(i) + str(polygons_state[i]))
