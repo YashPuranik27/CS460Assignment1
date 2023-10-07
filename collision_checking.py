@@ -39,7 +39,7 @@ def get_occupied_cells(polygon, grid_size):
     return occupied_cells
 
 
-def collides_SAT(polygons, polygon_state):
+def collides_Spatial_Detection(polygons, polygon_state):
 
     # Grid configuration
     grid_size = 2  # Size of each grid cell
@@ -147,7 +147,7 @@ def main():
     # second pass SAT　Checking
 
     polygons_pair=[]
-    collides_SAT(polygons, polygons_state)
+    collides_Spatial_Detection(polygons, polygons_state)
 
     for i in range(len(polygons)):
         print("poly state  " + str(i) + str(polygons_state[i]))
