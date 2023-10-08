@@ -4,7 +4,9 @@ matplotlib.use('TkAgg')
 import numpy as np
 import matplotlib.pyplot as plt
 import collision_checking
-from matplotlib.patches import Circle, Rectangle
+from matplotlib.patches import Circle, Rectangle, Polygon
+from matplotlib.collections import PatchCollection
+
 import math
 
 # Constants
@@ -40,7 +42,7 @@ class Joint:
         self.origin = Point(0, 0)
 
     def draw(self, ax):
-        ax.add_patch(Circle((self.curCenter.x, self.curCenter.y), R, color='gray'))
+        ax.add_patch(Circle((self.curCenter.x, self.curCenter.y), R, color='blue'))
 
     def move(self, theta):
             angle = theta * math.pi / 180
@@ -50,6 +52,10 @@ class Joint:
             self.curCenter.y = rotatedPoints[1]
 
             self.theta = angle
+
+    def resetOrigin(self, origin):
+        self.origin = Point(origin.x, origin.y)
+        self.center = Point(origin.x+L2+R, origin.y)
 
 class Arm:
 
@@ -76,16 +82,37 @@ class Arm:
         self.origin = None
         self.curOrigin = None
 
-    def draw(self):
+
+    def draw(self, ax):
+
+        nodes = []
+        nodes.append((self.curRect.bottomLeft.x, self.curRect.bottomLeft.y))
+        nodes.append((self.curRect.bottomRight.x, self.curRect.bottomRight.y))
+        nodes.append((self.curRect.topRight.x, self.curRect.topRight.y))
+        nodes.append((self.curRect.topLeft.x, self.curRect.topLeft.y))
+        poly = np.array(nodes)
+
+        polygon = Polygon(poly, closed=True, edgecolor='orange')
+        patches = [polygon]
+        p = PatchCollection(patches, edgecolor='orange', alpha=0.4)
+        ax.add_collection(p)
+
+
+    def draw_old(self, ax):
         polygon = []
         polygon.append((self.curRect.bottomLeft.x, self.curRect.bottomLeft.y))
         polygon.append((self.curRect.bottomRight.x, self.curRect.bottomRight.y))
         polygon.append((self.curRect.topRight.x, self.curRect.topRight.y))
         polygon.append((self.curRect.topLeft.x, self.curRect.topLeft.y))
 
+        poly = np.array(polygon)
+        ax.fill(poly[:, 0], poly[:, 1], 'g', alpha=0.9)
+
         polygon = np.concatenate((polygon, [polygon[0]]), axis=0)  # close the polygon
         xs, ys = zip(*polygon)
         plt.plot(xs, ys)
+
+
 
     def move(self, theta):
         angle = theta * math.pi / 180
@@ -109,7 +136,7 @@ class Arm:
         self.theta = angle
 
     def resetOrigin(self, origin):
-        self.origin = origin
+        self.origin = Point(origin.x, origin.y)
         self.rect = Rect(Point(self.origin.x, self.origin.y + R),
                          Point(self.origin.x + R + self.length, self.origin.y + R),
                          Point(self.origin.x, self.origin.y-R),
@@ -162,21 +189,27 @@ def create_arm_old(joint1, theta1, theta2):
 
 
 
-def plot_arm_new(ax, j1, j2, j3, arm1, arm2):
-    #ax.clear()  # Clear the current axes
-    #ax.set_aspect('equal', 'box')
-    #ax.set_xlim([0, 2])
-    #ax.set_ylim([0, 2])
+def plot_arm(ax, j1, j2, j3, arm1, arm2):
+    ax.clear()  # Clear the current axes
+    ax.set_aspect('equal', 'box')
+    ax.set_xlim([0, 2])
+    ax.set_ylim([0, 2])
 
-    # drawing the joints
+    # polygons. This may be deleted after we import the .npy
+    polygons = []
+    for polygon in polygons:
+        ax.fill(polygon[:, 0], polygon[:, 1], 'y', alpha=0.5)
+
+
+    # drawing the glaph
     j1.draw(ax)
     j2.draw(ax)
     j3.draw(ax)
-    arm1.draw()
-    arm2.draw()
+    arm1.draw(ax)
+    arm2.draw(ax)
 
 
-def plot_arm(ax, polygons, joint1, joint2, joint3, collided):
+def plot_arm_old(ax, polygons, joint1, joint2, joint3, collided):
     ax.clear()  # Clear the current axes
     ax.set_aspect('equal', 'box')
     ax.set_xlim([0, 2])
@@ -203,14 +236,11 @@ def find_roatated_position(origin, point, angle):
     oy = origin.y
     px = point.x
     py = point.y
-    print(" old x =" + str(point.x) + " old y =" + str(point.y))
+    print(" origin x =" + str(origin.x) + "y =" + str(origin.y) + " old x =" + str(point.x) + " y =" + str(point.y))
     rx = ox + (px-ox) * math.cos(angle) - (py-oy) * math.sin(angle)
     ry = oy + (px-ox) * math.sin(angle) + (py-oy) * math.cos(angle)
-    print(" new x =" + str(rx) + " new y =" + str(ry))
+    print(" new x =" + str(rx) + " y =" + str(ry))
     return rx, ry
-
-
-
 
 
 def on_key(event):
@@ -221,12 +251,16 @@ def on_key(event):
         arm1.move(theta1)
         J2.move(theta1)
         arm2.resetOrigin(J2.curCenter)
+        J3.resetOrigin(J2.curCenter)
+        print("reset J3 origin x= "+str(J2.curCenter.x)+" y= "+str(J2.curCenter.y))
         arm2.move(theta1+theta2)
         J3.move(theta1+theta2)
     elif event.key == 'left':
         theta1 -= 5
         arm1.move(theta1)
         J2.move(theta1)
+        arm2.resetOrigin(J2.curCenter)
+        J3.resetOrigin(J2.curCenter)
         arm2.move(theta1 + theta2)
         J3.move(theta1 + theta2)
     elif event.key == 'up':
@@ -240,28 +274,7 @@ def on_key(event):
     elif event.key == 'c':
         collision_space()
 
-    plot_arm(ax, polygons, joint1, joint2, joint3, collided)
-    plot_arm_new(ax, J1, J2, J3, arm1, arm2)
-    plt.draw()
-
-
-def on_key_old(event):
-    global theta1, theta2
-    if event.key == 'right':
-        theta1 += 5
-    elif event.key == 'left':
-        theta1 -= 5
-    elif event.key == 'up':
-        theta2 += 5
-    elif event.key == 'down':
-        theta2 -= 5
-    elif event.key == 'c':
-        collision_space()
-
-
-    joint2, joint3 = create_arm_old(joint1, theta1, theta2)
-
-    plot_arm(ax, polygons, joint1, joint2, joint3, collided)
+    plot_arm(ax, J1, J2, J3, arm1, arm2)
     plt.draw()
 
 
@@ -281,43 +294,12 @@ def main():
     arm1.origin=J1.center
     arm2.origin=J2.center
 
-
-    #create_arm(joint1, theta1, theta2, joint2, joint3, arm1, arm2)
-
-    joint1 = [1, 1]
-    joint2, joint3 = create_arm_old(joint1, theta1, theta2)
-
-
-    collided = [False, False, False, False, False]
+    #collided = [False, False, False, False, False]
 
     fig, ax = plt.subplots()
     fig.canvas.mpl_connect('key_press_event', on_key)
 
-    plot_arm(ax, polygons, joint1, joint2, joint3, collided)
-    plt.show()
-
-
-
-def main_old():
-    global joint1, polygons, collided, ax, arm1, arm2, joint2, joint3
-
-    polygons = []  # Placeholder, replace with the .npy file
-
-    joint1 = [1, 1]
-
-    arm1=Arm(0,0,L1)
-    arm2=Arm(0,0,L2)
-
-    #create_arm(joint1, theta1, theta2, joint2, joint3, arm1, arm2)
-
-    joint2, joint3 = create_arm_old(joint1, theta1, theta2)
-
-    collided = [False, False, False, False, False]
-
-    fig, ax = plt.subplots()
-    fig.canvas.mpl_connect('key_press_event', on_key_old)
-
-    plot_arm(ax, polygons, joint1, joint2, joint3, collided)
+    plot_arm(ax, J1, J2, J3, arm1, arm2)
     plt.show()
 
 
