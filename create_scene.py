@@ -16,7 +16,8 @@ def generate_convex_polygon(P, N_min, N_max, r_min, r_max):
     polygons = []
 
     for _ in range(P):
-        x_center, y_center = random.uniform(-100, 100), random.uniform(-100, 100)  # Random center of the polygon
+        #x_center, y_center = random.uniform(-100, 100), random.uniform(-100, 100)  # Random center of the polygon
+        x_center, y_center = random.uniform(0, 2), random.uniform(0, 2)  # Random center of the polygon
         N = random.randint(N_min, N_max)  # Number of vertices
 
         points = []
@@ -54,10 +55,81 @@ def plot_polygons(polygons):
         xs, ys = zip(*polygon)
         plt.plot(xs, ys)
 
-    plt.show()
+    #plt.show()
+
+
+def plot_name_initials(polygons):
+        plt.figure(figsize=(10, 10))
+        plt.axis('equal')
+
+        plt.title('name initials')
+
+        for polygon in polygons:
+            polygon = np.concatenate((polygon, [polygon[0]]), axis=0)  # close the polygon
+            xs, ys = zip(*polygon)
+            plt.plot(xs, ys)
+
+        plt.show()
+
+
+def construct_name_inital_polygons():
+
+    #### letter Y
+    name_polygons = []
+    name_poly=[]
+    name_poly.append([4.09, 14.3])
+    name_poly.append([2.37, 13.14])
+    name_poly.append([6.71, 6.78])
+    name_poly.append([8.73, 8.46])
+    name_polygons.append(name_poly)
+
+    name_poly=[]
+    name_poly.append([13.25, 13.78])
+    name_poly.append([15.15, 12.26])
+    name_poly.append([9.67, 6.62])
+    name_poly.append([8.37, 8.46])
+    name_polygons.append(name_poly)
+
+    name_poly=[]
+    name_poly.append([6.71, 6.78])
+    name_poly.append([8.37, 8.46])
+    name_poly.append([9.67, 6.62])
+    name_poly.append([9.53, 0])
+    name_poly.append([6.55, 0])
+    name_polygons.append(name_poly)
+
+    ### letter A
+    name_poly = []
+    name_poly.append([18.53, 6.96])
+    name_poly.append([21.08, 7.02])
+    name_poly.append([21.62, 5.04])
+    name_poly.append([17.85, 5.09])
+    name_polygons.append(name_poly)
+
+    name_poly = []
+    name_poly.append([18.55, 13.62])
+    name_poly.append([19.91, 13.62])
+    name_poly.append([20.0, 11.0])
+    name_poly.append([16.0, 0.0])
+    name_poly.append([13.73, 0.0])
+    name_polygons.append(name_poly)
+
+    name_poly = []
+    name_poly.append([25.0, 0.0])
+    name_poly.append([23.0, 0.0])
+    name_poly.append([20.0, 11.0])
+    name_poly.append([19.91, 13.62])
+    name_poly.append([21.49, 13.68])
+
+    name_polygons.append(name_poly)
+
+
+    save_polygons_to_file(name_polygons, "name_initials.npy")
+
 
 
 def main():
+
     P = int(input("Enter the total number of polygons in the scene (P): "))
     N_min = int(input("Enter the minimum number of vertices (N_min): "))
     N_max = int(input("Enter the maximum number of vertices (N_max): "))
@@ -66,6 +138,7 @@ def main():
     filename = input("Enter the filename to save/load polygons (without extension): ") + '.npy'  # Note the file extension change
 
     polygons = generate_convex_polygon(P, N_min, N_max, r_min, r_max)
+    print("...... polygons", polygons)
     save_polygons_to_file(polygons, filename)
 
     loaded_polygons = load_polygons_from_file(filename)
@@ -75,6 +148,15 @@ def main():
         print(repr(polygon), end=' ')
     print()
     plot_polygons(loaded_polygons)
+
+
+    #visualization of the name_initial letters
+    construct_name_inital_polygons()
+
+    name_initial_polygons = load_polygons_from_file("name_initials.npy")
+    plot_name_initials(name_initial_polygons)
+
+    plt.show()
 
 
 if __name__ == "__main__":
