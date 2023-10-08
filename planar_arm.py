@@ -31,21 +31,34 @@ class Rect:
         self.bottomRight = bottomRight
 
 class Joint:
+
     def __init__(self, center, arm):
         self.center = Point(center.x, center.y)
         self.curCenter = Point(center.x, center.y)
         self.arm = arm
         self.theta = 0.0
+        self.origin = Point(0, 0)
 
+    def draw(self, ax):
+        ax.add_patch(Circle((self.curCenter.x, self.curCenter.y), R, color='gray'))
+
+    def move(self, theta):
+            angle = theta * math.pi / 180
+
+            rotatedPoints = find_roatated_position(self.origin, self.center, angle)
+            self.curCenter.x = rotatedPoints[0]
+            self.curCenter.y = rotatedPoints[1]
+
+            self.theta = angle
 
 class Arm:
+
     #(x, y) is the bottomLeft of the rectangle
     def __init__(self, x, y, length):
         #Arm.x = x
         #Arm.y = y
-        self.lenght = length
+        self.length = length
         #Arm.height = 2*R
-        self.center=Point(0,0)
 
         self.rect=Rect(Point(x, y+2*R),
                             Point(x+R+length, y+2*R),
@@ -61,7 +74,47 @@ class Arm:
 
         self.theta = 0.0
         self.origin = None
+        self.curOrigin = None
 
+    def draw(self):
+        polygon = []
+        polygon.append((self.curRect.bottomLeft.x, self.curRect.bottomLeft.y))
+        polygon.append((self.curRect.bottomRight.x, self.curRect.bottomRight.y))
+        polygon.append((self.curRect.topRight.x, self.curRect.topRight.y))
+        polygon.append((self.curRect.topLeft.x, self.curRect.topLeft.y))
+
+        polygon = np.concatenate((polygon, [polygon[0]]), axis=0)  # close the polygon
+        xs, ys = zip(*polygon)
+        plt.plot(xs, ys)
+
+    def move(self, theta):
+        angle = theta * math.pi / 180
+
+        #print(" in arm_move joint x =" + str(joint.center.x) + " joint y =" + str(joint.center.y) + " theta =" + str(
+         #   arm.theta))
+
+        rotatedPoints = find_roatated_position(self.origin, self.rect.topLeft, angle)
+        self.curRect.topLeft.x = rotatedPoints[0]
+        self.curRect.topLeft.y = rotatedPoints[1]
+        rotatedPoints = find_roatated_position(self.origin, self.rect.topRight, angle)
+        self.curRect.topRight.x = rotatedPoints[0]
+        self.curRect.topRight.y = rotatedPoints[1]
+        rotatedPoints = find_roatated_position(self.origin, self.rect.bottomLeft, angle)
+        self.curRect.bottomLeft.x = rotatedPoints[0]
+        self.curRect.bottomLeft.y = rotatedPoints[1]
+        rotatedPoints = find_roatated_position(self.origin, self.rect.bottomRight, angle)
+        self.curRect.bottomRight.x = rotatedPoints[0]
+        self.curRect.bottomRight.y = rotatedPoints[1]
+
+        self.theta = angle
+
+    def resetOrigin(self, origin):
+        self.origin = origin
+        self.rect = Rect(Point(self.origin.x, self.origin.y + R),
+                         Point(self.origin.x + R + self.length, self.origin.y + R),
+                         Point(self.origin.x, self.origin.y-R),
+                         Point(self.origin.x + R + self.length, self.origin.y-R)
+                         )
 
 def collision_space():
     # compute and visualize the collision-free confuguration space
@@ -86,34 +139,6 @@ def check_all_collisions(polygons, joint1, joint2, joint3, rect1, rect2):
 
     return collided
 
-def findRotatedPoints(cx, cy, vx, vy, rotatedAngle, newX, newY):
-    rotatedAngle = rotatedAngle * math.PI / 180 # convert angle to radians
-
-    # cx, cy is the center of rectangle
-    # vx, vy is the vertex to be converted
-
-    dx = vx - cx
-    dy = vy - cy
-    distance = cx + math.sqrt(dx*dx + dy*dy)
-    preAngle = math.atan2(dy, dx)
-
-    newX = cx + distance * math.cos(preAngle + rotatedAngle)
-    newY = cy = distance * math.sin(preAngle + rotatedAngle)
-
-
-def findRoatedRectangleVertex(rect):
-
-    cx = rect.x + (rect.w / 2)
-    cy = rect.y + (rect.h / 2)
-
-    topleft  = findRotatedPoints(cx, cy, rect.x, rect.y, rect.rotation)
-    topright = findRotatedPoints(cx, cy, rect.x+rect.w, rect.y, rectangle.rotation)
-    bottomLeft = findRotatedPoints(cx, cy, rect.x, rect.y+rect.h, rect.rotation)
-    topleft = findRotatedPoints(cx, cy, rect.x+rect.w, rect.y+rect.h, rect.rotation)
-
-    #print("orig rect = "+rect.)
-
-
 
 def create_arm(joint1, theta1, theta2, joint2, joint3, arm1, arm2):
         joint2 = [joint1[0] + (L1 + R) * math.cos(math.radians(theta1)),
@@ -128,9 +153,6 @@ def create_arm(joint1, theta1, theta2, joint2, joint3, arm1, arm2):
         arm2.y = 1+R
 
 
-
-
-
 def create_arm_old(joint1, theta1, theta2):
     joint2 = [joint1[0] + (L1 + R) * math.cos(math.radians(theta1)),
               joint1[1] + (L1 + R) * math.sin(math.radians(theta1))]
@@ -140,24 +162,18 @@ def create_arm_old(joint1, theta1, theta2):
 
 
 
-def plot_arm_new(ax, joint, arm):
+def plot_arm_new(ax, j1, j2, j3, arm1, arm2):
     #ax.clear()  # Clear the current axes
     #ax.set_aspect('equal', 'box')
     #ax.set_xlim([0, 2])
     #ax.set_ylim([0, 2])
 
     # drawing the joints
-    ax.add_patch(Circle((J1.center.x, J1.center.y), R, color='purple'))
-    # draw the arm
-    polygon = []
-    polygon.append((arm.curRect.bottomLeft.x, arm.curRect.bottomLeft.y))
-    polygon.append((arm.curRect.bottomRight.x, arm.curRect.bottomRight.y))
-    polygon.append((arm.curRect.topRight.x, arm.curRect.topRight.y))
-    polygon.append((arm.curRect.topLeft.x, arm.curRect.topLeft.y))
-
-    polygon = np.concatenate((polygon, [polygon[0]]), axis=0)  # close the polygon
-    xs, ys = zip(*polygon)
-    plt.plot(xs, ys)
+    j1.draw(ax)
+    j2.draw(ax)
+    j3.draw(ax)
+    arm1.draw()
+    arm2.draw()
 
 
 def plot_arm(ax, polygons, joint1, joint2, joint3, collided):
@@ -194,39 +210,7 @@ def find_roatated_position(origin, point, angle):
     return rx, ry
 
 
-#move joint
-def joint_move(origin, joint, theta):
 
-    angle = theta * math.pi /180
-
-    rotatedPoints = find_roatated_position(origin.center, joint.curCenter, angle)
-    joint.curCenter.x = rotatedPoints[0]
-    joint.curCenter.y = rotatedPoints[1]
-
-    joint.theta = angle
-
-
-#move arm
-def arm_move(joint, arm, theta):
-
-    angle = theta * math.pi /180
-
-    print(" in arm_move joint x =" + str(joint.center.x) + " joint y =" + str(joint.center.y) + " theta =" + str(arm.theta))
-
-    rotatedPoints = find_roatated_position(arm.origin, arm.rect.topLeft, angle)
-    arm.curRect.topLeft.x = rotatedPoints[0]
-    arm.curRect.topLeft.y = rotatedPoints[1]
-    rotatedPoints = find_roatated_position(arm.origin, arm.rect.topRight, angle)
-    arm.curRect.topRight.x = rotatedPoints[0]
-    arm.curRect.topRight.y = rotatedPoints[1]
-    rotatedPoints = find_roatated_position(arm.origin, arm.rect.bottomLeft, angle)
-    arm.curRect.bottomLeft.x = rotatedPoints[0]
-    arm.curRect.bottomLeft.y = rotatedPoints[1]
-    rotatedPoints = find_roatated_position(arm.origin, arm.rect.bottomRight, angle)
-    arm.curRect.bottomRight.x = rotatedPoints[0]
-    arm.curRect.bottomRight.y = rotatedPoints[1]
-
-    arm.theta = angle
 
 
 def on_key(event):
@@ -234,31 +218,30 @@ def on_key(event):
     if event.key == 'right':
         theta1 += 5
         print("move arm1 ")
-        arm_move(J1, arm1, theta1)
-        joint_move(J1, J2, theta1)
-        #arm_move(J2, arm2, theta1)
-        #joint_move(J2, J3, theta1)
+        arm1.move(theta1)
+        J2.move(theta1)
+        arm2.resetOrigin(J2.curCenter)
+        arm2.move(theta1+theta2)
+        J3.move(theta1+theta2)
     elif event.key == 'left':
         theta1 -= 5
-        arm_move(J1, arm1, theta1)
-        joint_move(J1, J2, theta1)
-        arm_move(J2, arm2, theta1)
-        joint_move(J2, J3, theta1)
+        arm1.move(theta1)
+        J2.move(theta1)
+        arm2.move(theta1 + theta2)
+        J3.move(theta1 + theta2)
     elif event.key == 'up':
         theta2 += 5
-        joint_move(J1, J2, theta2)
-        arm_move(J2, arm2, theta2)
-        joint_move(J2, J3, theta2)
+        arm2.move(theta1+theta2)
+        J3.move(theta1+theta2)
     elif event.key == 'down':
         theta2 -= 5
-        joint_move(J1, J2, theta2)
-        arm_move(J2, arm2, theta2)
-        joint_move(J2, J3, theta2)
+        arm2.move(theta1+theta2)
+        J3.move(theta1+theta2)
     elif event.key == 'c':
         collision_space()
 
     plot_arm(ax, polygons, joint1, joint2, joint3, collided)
-    plot_arm_new(ax, J1, arm1)
+    plot_arm_new(ax, J1, J2, J3, arm1, arm2)
     plt.draw()
 
 
@@ -292,9 +275,12 @@ def main():
     arm2=Arm(1+2*R+L1,1-R,L2)
     J1 = Joint(Point(1,1), arm1)
     J2 = Joint(Point(1+L1+R, 1), arm2)
+    J2.origin=J1.center
     J3 = Joint(Point(1+L1+R+L2+R, 1), None)
+    J3.origin=J2.center
     arm1.origin=J1.center
-    #arm2.joint=J2
+    arm2.origin=J2.center
+
 
     #create_arm(joint1, theta1, theta2, joint2, joint3, arm1, arm2)
 
