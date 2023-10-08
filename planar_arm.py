@@ -66,7 +66,11 @@ class Joint:
 
     def move(self, theta):
             angle = theta * math.pi / 180
-            self.copyPoint(self.curCenter, self.prevCenter)
+            #self.copyPoint(self.curCenter, self.prevCenter)
+
+            self.prevCenter.x = self.curCenter.x
+            self.prevCenter.y = self.curCenter.y
+
             rotatedPoints = find_roatated_position(self.origin, self.center, angle)
             self.curCenter.x = rotatedPoints[0]
             self.curCenter.y = rotatedPoints[1]
@@ -360,6 +364,15 @@ def on_key(event):
         #print("reset J3 origin x= "+str(J2.curCenter.x)+" y= "+str(J2.curCenter.y))
         arm2.move(theta1+theta2)
         J3.move(theta1+theta2)
+        if arm_collision_check(arm1) == True:
+            collied = True
+        if joint_collsion_check(J2) == True:
+            collied = True
+        if arm_collision_check(arm2) == True:
+            collied = True
+        if joint_collsion_check(J3) == True:
+            collied = True
+
     elif event.key == 'left':
         theta1 -= 5
         arm1.move(theta1)
@@ -368,12 +381,20 @@ def on_key(event):
         J3.resetOrigin(J2.curCenter)
         arm2.move(theta1 + theta2)
         J3.move(theta1 + theta2)
+        if arm_collision_check(arm1) == True:
+            collied = True
+        if joint_collsion_check(J2) == True:
+            collied = True
+        if arm_collision_check(arm2) == True:
+            collied = True
+        if joint_collsion_check(J3) == True:
+            collied = True
+
     elif event.key == 'up':
         theta2 += 5
         arm2.move(theta1+theta2)
         J3.move(theta1+theta2)
         if arm_collision_check(arm2) == True:
-            print("-------------------COLLISION-----------------")
             collied = True
         if joint_collsion_check(J3) == True:
             collied = True
@@ -382,6 +403,11 @@ def on_key(event):
         theta2 -= 5
         arm2.move(theta1+theta2)
         J3.move(theta1+theta2)
+        if arm_collision_check(arm2) == True:
+            collied = True
+        if joint_collsion_check(J3) == True:
+            collied = True
+
     elif event.key == 'c':
         collision_space()
 
@@ -389,6 +415,8 @@ def on_key(event):
     if collied == True:
         print("restore position     -----------------------")
         restorePrevPosition()
+        theta1 = prevTheta1
+        theta2 = prevTheta2
         plot_graph(ax, False)
     else:
         plot_graph(ax, False)
@@ -398,8 +426,8 @@ def on_key(event):
     plt.draw()
 
     setToNotMoved()
-
-
+    prevTheta1 = theta1
+    prevTheta2 = theta2
 
 
 def main():
