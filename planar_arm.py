@@ -151,6 +151,15 @@ class Arm:
 
         return poly
 
+    def toPolyArray(self):
+        poly = []
+        poly.append([self.curRect.bottomLeft.x, self.curRect.bottomLeft.y])
+        poly.append([self.curRect.bottomRight.x, self.curRect.bottomRight.y])
+        poly.append([self.curRect.topRight.x, self.curRect.topRight.y])
+        poly.append([self.curRect.topLeft.x, self.curRect.topLeft.y])
+
+        return poly
+
     def copyRect(self, fromRect, toRect):
         toRect.topLeft.x=fromRect.topLeft.x
         toRect.topLeft.y=fromRect.topLeft.y
@@ -183,9 +192,6 @@ class Arm:
         self.curRect.bottomRight.y = rotatedPoints[1]
         self.moved = True
 
-    def collsion_check(self, polygons):
-        poly = self.toPoly()
-        return False
 
     def resetOrigin(self, origin):
         self.origin = Point(origin.x, origin.y)
@@ -196,26 +202,10 @@ class Arm:
                          )
 
 
-def collision_check(poly, polygons):
-    return False
-
-# read polygon info from file
-def load_polygons_from_file(filename):
-    data = np.load(filename, allow_pickle=True)
-    return [data[i] for i in range(len(data))]
-
-
 
 def collision_space():
     # compute and visualize the collision-free confuguration space
     print ("in collsion_space")
-
-def check_collision_with_polygons(shape, polygons):
-    for polygon in polygons:
-        if collision_checking.collides(shape, polygon):
-            return True
-    return False
-
 
 def check_all_collisions():
     collided = [False, False, False, False, False]
@@ -232,7 +222,15 @@ def check_all_collisions():
     return False
 
 def arm_collision_check(arm):
+
+    for i in range(len(polyGraph)-1):
+        poly1 = polyGraph[i]
+        if collision_checking.collides_bounding_box(poly1, arm.toPolyArray())==True:
+            print("collision check true!!!!!!!!!!!!!!!!!!!!")
+            return True
+
     return False
+
 
 def joint_collsion_check(joint):
     return False
@@ -374,8 +372,12 @@ def on_key(event):
         theta2 += 5
         arm2.move(theta1+theta2)
         J3.move(theta1+theta2)
-        if ( arm_collision_check(arm2) == True or joint_collsion_check(J3) == True ):
+        if arm_collision_check(arm2) == True:
+            print("-------------------COLLISION-----------------")
             collied = True
+        if joint_collsion_check(J3) == True:
+            collied = True
+
     elif event.key == 'down':
         theta2 -= 5
         arm2.move(theta1+theta2)
@@ -383,10 +385,9 @@ def on_key(event):
     elif event.key == 'c':
         collision_space()
 
-    collied = check_all_collisions()
-
 
     if collied == True:
+        print("restore position     -----------------------")
         restorePrevPosition()
         plot_graph(ax, False)
     else:
@@ -420,7 +421,7 @@ def main():
 
     #polygons_state = []
 
-    polyGraph = load_polygons_from_file(r'E:\Alex\CS460Assignment1\arm_polygons.npy')
+    polyGraph = collision_checking.load_polygons_from_file(r'E:\Alex\CS460Assignment1\arm_polygons.npy')
     for polygon in polyGraph:
         # print("Generated Polygon:", polygon)
         print(repr(polygon), end=' ')
