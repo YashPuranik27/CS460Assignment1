@@ -12,6 +12,8 @@ def load_polygons_from_file(filename):
 
 def collides_bounding_box(polygon1, polygon2):
     # Calculate bounding boxes
+
+    print(polygon1)
     min1, max1 = np.min(polygon1, axis=0), np.max(polygon1, axis=0)
     min2, max2 = np.min(polygon2, axis=0), np.max(polygon2, axis=0)
 
@@ -124,7 +126,7 @@ def plot_old(polygon1, polygon2, check_result):
 def main():
     polygons_state = []
 
-    polygons = load_polygons_from_file(r'E:\Alex\CS460Assignment1\collision_checking_polygons.npy')
+    polygons = load_polygons_from_file(r'collision_checking_polygons.npy')
     for polygon in polygons:
         # print("Generated Polygon:", polygon)
         print(repr(polygon), end=' ')
