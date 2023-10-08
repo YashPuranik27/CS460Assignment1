@@ -32,26 +32,45 @@ class Rect:
         self.bottomLeft = bottomLeft
         self.bottomRight = bottomRight
 
+    def toString(self):
+
+        return ('['+str(self.topLeft.x)+','+str(self.topLeft.y)+']'+
+                '[' + str(self.topRight.x) + ',' + str(self.topRight.y) + ']' +
+                '[' + str(self.bottomLeft.x) + ',' + str(self.bottomLeft.y) + ']' +
+                '[' + str(self.bottomRight.x) + ',' + str(self.bottomRight.y) + ']'
+                )
+
+
+
 class Joint:
 
     def __init__(self, center, arm):
         self.center = Point(center.x, center.y)
         self.curCenter = Point(center.x, center.y)
+        self.prevCenter = Point(center.x, center.y)
         self.arm = arm
         self.theta = 0.0
         self.origin = Point(0, 0)
+        self.moved = False
 
-    def draw(self, ax):
-        ax.add_patch(Circle((self.curCenter.x, self.curCenter.y), R, color='blue'))
+    def draw(self, ax, collied):
+        color = 'b'
+        if collied:
+            color = 'r'
+
+        ax.add_patch(Circle((self.curCenter.x, self.curCenter.y), R, color=color))
+
+    def copyPoint(self, fromPoint, toPoint):
+        toPoint.x = fromPoint.x
+        toPoint.y = fromPoint.y
 
     def move(self, theta):
             angle = theta * math.pi / 180
-
+            self.copyPoint(self.curCenter, self.prevCenter)
             rotatedPoints = find_roatated_position(self.origin, self.center, angle)
             self.curCenter.x = rotatedPoints[0]
             self.curCenter.y = rotatedPoints[1]
-
-            self.theta = angle
+            self.moved=True
 
     def resetOrigin(self, origin):
         self.origin = Point(origin.x, origin.y)
@@ -78,12 +97,23 @@ class Arm:
                             Point(x+R+length, y)
         )
 
+        self.prevRect = Rect(Point(x, y + 2 * R),
+                            Point(x + R + length, y + 2 * R),
+                            Point(x, y),
+                            Point(x + R + length, y)
+                            )
+
         self.theta = 0.0
         self.origin = None
         self.curOrigin = None
+        self.moved = False
 
 
-    def draw(self, ax):
+    def draw(self, ax, collied):
+
+        color = 'g'
+        if collied:
+            color = 'r'
 
         nodes = []
         nodes.append((self.curRect.bottomLeft.x, self.curRect.bottomLeft.y))
@@ -92,9 +122,9 @@ class Arm:
         nodes.append((self.curRect.topLeft.x, self.curRect.topLeft.y))
         poly = np.array(nodes)
 
-        polygon = Polygon(poly, closed=True, edgecolor='orange')
+        polygon = Polygon(poly, closed=True, edgecolor=color)
         patches = [polygon]
-        p = PatchCollection(patches, edgecolor='orange', alpha=0.4)
+        p = PatchCollection(patches, edgecolor=color, alpha=0.4)
         ax.add_collection(p)
 
 
@@ -112,13 +142,32 @@ class Arm:
         xs, ys = zip(*polygon)
         plt.plot(xs, ys)
 
+    def toPoly(self):
+        poly = []
+        poly.append((self.curRect.bottomLeft.x, self.curRect.bottomLeft.y))
+        poly.append((self.curRect.bottomRight.x, self.curRect.bottomRight.y))
+        poly.append((self.curRect.topRight.x, self.curRect.topRight.y))
+        poly.append((self.curRect.topLeft.x, self.curRect.topLeft.y))
 
+        return poly
+
+    def copyRect(self, fromRect, toRect):
+        toRect.topLeft.x=fromRect.topLeft.x
+        toRect.topLeft.y=fromRect.topLeft.y
+        toRect.topRight.x=fromRect.topRight.x
+        toRect.topRight.y=fromRect.topRight.y
+        toRect.bottomLeft.x=fromRect.bottomLeft.x
+        toRect.bottomLeft.y=fromRect.bottomLeft.y
+        toRect.bottomRight.x=fromRect.bottomRight.x
+        toRect.bottomRight.y=fromRect.bottomRight.y
 
     def move(self, theta):
         angle = theta * math.pi / 180
 
         #print(" in arm_move joint x =" + str(joint.center.x) + " joint y =" + str(joint.center.y) + " theta =" + str(
          #   arm.theta))
+
+        self.copyRect(self.curRect, self.prevRect)
 
         rotatedPoints = find_roatated_position(self.origin, self.rect.topLeft, angle)
         self.curRect.topLeft.x = rotatedPoints[0]
@@ -132,8 +181,11 @@ class Arm:
         rotatedPoints = find_roatated_position(self.origin, self.rect.bottomRight, angle)
         self.curRect.bottomRight.x = rotatedPoints[0]
         self.curRect.bottomRight.y = rotatedPoints[1]
+        self.moved = True
 
-        self.theta = angle
+    def collsion_check(self, polygons):
+        poly = self.toPoly()
+        return False
 
     def resetOrigin(self, origin):
         self.origin = Point(origin.x, origin.y)
@@ -144,6 +196,8 @@ class Arm:
                          )
 
 
+def collision_check(poly, polygons):
+    return False
 
 # read polygon info from file
 def load_polygons_from_file(filename):
@@ -163,18 +217,25 @@ def check_collision_with_polygons(shape, polygons):
     return False
 
 
-def check_all_collisions(polygons, joint1, joint2, joint3, rect1, rect2):
+def check_all_collisions():
     collided = [False, False, False, False, False]
 
     # Check each part of the arm for collision
-    collided[0] = check_collision_with_polygons(rect1, polygons)
-    collided[1] = check_collision_with_polygons(rect2, polygons)
-    collided[2] = check_collision_with_polygons(joint1, polygons)
-    collided[3] = check_collision_with_polygons(joint2, polygons)
-    collided[4] = check_collision_with_polygons(joint3, polygons)
+    #collided[0] = check_collision_with_polygons(arm1, polyGraph)
+    #collided[1] = check_collision_with_polygons(arm2, polyGraph)
+    #collided[2] = check_collision_with_polygons(J1, polyGraph)
+    #collided[3] = check_collision_with_polygons(J2, polyGraph)
+    #collided[4] = check_collision_with_polygons(J3, polyGraph)
 
-    return collided
+    #return collided
 
+    return False
+
+def arm_collision_check(arm):
+    return False
+
+def joint_collsion_check(joint):
+    return False
 
 def create_arm(joint1, theta1, theta2, joint2, joint3, arm1, arm2):
         joint2 = [joint1[0] + (L1 + R) * math.cos(math.radians(theta1)),
@@ -198,19 +259,24 @@ def create_arm_old(joint1, theta1, theta2):
 
 
 
-def plot_arm(ax, j1, j2, j3, arm1, arm2):
-
-    # polygons. This may be deleted after we import the .npy
-    polygons = []
-    for polygon in polygons:
-        ax.fill(polygon[:, 0], polygon[:, 1], 'y', alpha=0.5)
-
+def plot_graph(ax, collied):
     # drawing the glaph
-    j1.draw(ax)
-    j2.draw(ax)
-    j3.draw(ax)
-    arm1.draw(ax)
-    arm2.draw(ax)
+    ax.clear()  # Clear the current axes
+    ax.set_aspect('equal', 'box')
+    ax.set_xlim([0, 2])
+    ax.set_ylim([0, 2])
+
+    J1.draw(ax, collied)
+    J2.draw(ax, collied)
+    J3.draw(ax, collied)
+    arm1.draw(ax, collied)
+    arm2.draw(ax, collied)
+
+    # draw polygon objects
+    for polygon in polyGraph:
+        polygon = np.concatenate((polygon, [polygon[0]]), axis=0)  # close the polygon
+        xs, ys = zip(*polygon)
+        plt.plot(xs, ys)
 
 
 def plot_arm_old(ax, polygons, joint1, joint2, joint3, collided):
@@ -246,14 +312,47 @@ def find_roatated_position(origin, point, angle):
     #print(" new x =" + str(rx) + " y =" + str(ry))
     return rx, ry
 
+def setToNotMoved():
+    arm1.moved=False
+    arm2.moved=False
+    J1.moved=False
+    J2.moved=False
+    J3.moved=False
+
+def restorePrevPosition():
+
+    print("in restore")
+    if arm1.moved == True:
+        arm1.copyRect(arm1.prevRect, arm1.curRect)
+        #print("restore arm1")
+    if arm2.moved == True:
+        #print("before restore arm2")
+        #print("prev: " + arm2.prevRect.toString() + "\n")
+        #print("cur: " + arm2.curRect.toString() + "\n\n")
+        arm2.copyRect(arm2.prevRect, arm2.curRect)
+        #print("after restore arm2")
+        #print("prev: " + arm2.prevRect.toString() + "\n")
+        #print("cur: " + arm2.curRect.toString() + "\n\n")
+    if J2.moved == True:
+        J2.copyPoint = (J2.prevCenter, J2.curCenter)
+        #print("restore joint2")
+    if J3.moved == True:
+        J3.copyPoint(J3.prevCenter, J3.curCenter)
+        #print("restore joint3")
+
+    theta1 = prevTheta1
+    theta2 = prevTheta2
 
 def on_key(event):
-    ax.clear()  # Clear the current axes
-    ax.set_aspect('equal', 'box')
-    ax.set_xlim([0, 2])
-    ax.set_ylim([0, 2])
 
-    global theta1, theta2
+    global theta1, theta2, prevTheta1, prevTheta2
+
+
+    prevTheta1 = theta1
+    prevTheta2 = theta2
+    collied = False
+    setToNotMoved()
+
     if event.key == 'right':
         theta1 += 5
         arm1.move(theta1)
@@ -275,6 +374,8 @@ def on_key(event):
         theta2 += 5
         arm2.move(theta1+theta2)
         J3.move(theta1+theta2)
+        if ( arm_collision_check(arm2) == True or joint_collsion_check(J3) == True ):
+            collied = True
     elif event.key == 'down':
         theta2 -= 5
         arm2.move(theta1+theta2)
@@ -282,19 +383,26 @@ def on_key(event):
     elif event.key == 'c':
         collision_space()
 
-    plot_arm(ax, J1, J2, J3, arm1, arm2)
+    collied = check_all_collisions()
 
-    for polygon in polygons:
-        polygon = np.concatenate((polygon, [polygon[0]]), axis=0)  # close the polygon
-        xs, ys = zip(*polygon)
-        plt.plot(xs, ys)
 
+    if collied == True:
+        restorePrevPosition()
+        plot_graph(ax, False)
+    else:
+        plot_graph(ax, False)
+        #plt.draw()
+        #plt.pause(.002)
 
     plt.draw()
 
+    setToNotMoved()
+
+
+
 
 def main():
-    global joint1, joint2, joint3, polygons, collided, ax, arm1, arm2
+    global joint1, joint2, joint3, polyGraph, collided, ax, arm1, arm2
     global J1, J2, J3, arm1, arm2
 
     # create arm and joints
@@ -312,8 +420,8 @@ def main():
 
     #polygons_state = []
 
-    polygons = load_polygons_from_file(r'E:\Alex\CS460Assignment1\arm_polygons.npy')
-    for polygon in polygons:
+    polyGraph = load_polygons_from_file(r'E:\Alex\CS460Assignment1\arm_polygons.npy')
+    for polygon in polyGraph:
         # print("Generated Polygon:", polygon)
         print(repr(polygon), end=' ')
         #polygons_state.append(False)
@@ -327,17 +435,17 @@ def main():
     ax.set_ylim([0, 2])
 
     ax.set_aspect('equal')
-    for polygon in polygons:
-        polygon = np.concatenate((polygon, [polygon[0]]), axis=0)  # close the polygon
-        xs, ys = zip(*polygon)
-        plt.plot(xs, ys)
+    #for polygon in polyGraph:
+    #    polygon = np.concatenate((polygon, [polygon[0]]), axis=0)  # close the polygon
+    #    xs, ys = zip(*polygon)
+    #    plt.plot(xs, ys)
 
     collided = [False, False, False, False, False]
 
 
     fig.canvas.mpl_connect('key_press_event', on_key)
 
-    plot_arm(ax, J1, J2, J3, arm1, arm2)
+    plot_graph(ax, False)
     plt.show()
 
 
