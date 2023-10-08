@@ -80,7 +80,7 @@ def construct_name_inital_polygons():
     name_poly.append([4.09, 14.3])
     name_poly.append([2.37, 13.14])
     name_poly.append([6.71, 6.78])
-    name_poly.append([8.73, 8.46])
+    name_poly.append([8.37, 8.46])
     name_polygons.append(name_poly)
 
     name_poly=[]
