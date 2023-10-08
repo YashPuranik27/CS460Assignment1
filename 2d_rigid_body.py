@@ -65,7 +65,7 @@ class RigidBody:
 
         collision = False
         for ob in self.obstacles:
-            if collision_checking.collides(new_rect, ob):
+            if collision_checking.collides_bounding_box(new_rect, ob):
                 collision = True
                 break
 
