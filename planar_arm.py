@@ -143,6 +143,15 @@ class Arm:
                          Point(self.origin.x + R + self.length, self.origin.y-R)
                          )
 
+
+
+# read polygon info from file
+def load_polygons_from_file(filename):
+    data = np.load(filename, allow_pickle=True)
+    return [data[i] for i in range(len(data))]
+
+
+
 def collision_space():
     # compute and visualize the collision-free confuguration space
     print ("in collsion_space")
@@ -190,16 +199,11 @@ def create_arm_old(joint1, theta1, theta2):
 
 
 def plot_arm(ax, j1, j2, j3, arm1, arm2):
-    ax.clear()  # Clear the current axes
-    ax.set_aspect('equal', 'box')
-    ax.set_xlim([0, 2])
-    ax.set_ylim([0, 2])
 
     # polygons. This may be deleted after we import the .npy
     polygons = []
     for polygon in polygons:
         ax.fill(polygon[:, 0], polygon[:, 1], 'y', alpha=0.5)
-
 
     # drawing the glaph
     j1.draw(ax)
@@ -236,23 +240,27 @@ def find_roatated_position(origin, point, angle):
     oy = origin.y
     px = point.x
     py = point.y
-    print(" origin x =" + str(origin.x) + "y =" + str(origin.y) + " old x =" + str(point.x) + " y =" + str(point.y))
+    #print(" origin x =" + str(origin.x) + "y =" + str(origin.y) + " old x =" + str(point.x) + " y =" + str(point.y))
     rx = ox + (px-ox) * math.cos(angle) - (py-oy) * math.sin(angle)
     ry = oy + (px-ox) * math.sin(angle) + (py-oy) * math.cos(angle)
-    print(" new x =" + str(rx) + " y =" + str(ry))
+    #print(" new x =" + str(rx) + " y =" + str(ry))
     return rx, ry
 
 
 def on_key(event):
+    ax.clear()  # Clear the current axes
+    ax.set_aspect('equal', 'box')
+    ax.set_xlim([0, 2])
+    ax.set_ylim([0, 2])
+
     global theta1, theta2
     if event.key == 'right':
         theta1 += 5
-        print("move arm1 ")
         arm1.move(theta1)
         J2.move(theta1)
         arm2.resetOrigin(J2.curCenter)
         J3.resetOrigin(J2.curCenter)
-        print("reset J3 origin x= "+str(J2.curCenter.x)+" y= "+str(J2.curCenter.y))
+        #print("reset J3 origin x= "+str(J2.curCenter.x)+" y= "+str(J2.curCenter.y))
         arm2.move(theta1+theta2)
         J3.move(theta1+theta2)
     elif event.key == 'left':
@@ -275,15 +283,21 @@ def on_key(event):
         collision_space()
 
     plot_arm(ax, J1, J2, J3, arm1, arm2)
+
+    for polygon in polygons:
+        polygon = np.concatenate((polygon, [polygon[0]]), axis=0)  # close the polygon
+        xs, ys = zip(*polygon)
+        plt.plot(xs, ys)
+
+
     plt.draw()
 
 
 def main():
     global joint1, joint2, joint3, polygons, collided, ax, arm1, arm2
-    global J1, J2, J3
+    global J1, J2, J3, arm1, arm2
 
-    polygons = []  # Placeholder, replace with the .npy file
-
+    # create arm and joints
     arm1=Arm(1,1-R,L1)
     arm2=Arm(1+2*R+L1,1-R,L2)
     J1 = Joint(Point(1,1), arm1)
@@ -294,9 +308,33 @@ def main():
     arm1.origin=J1.center
     arm2.origin=J2.center
 
-    #collided = [False, False, False, False, False]
+    #load polygons
 
-    fig, ax = plt.subplots()
+    #polygons_state = []
+
+    polygons = load_polygons_from_file(r'E:\Alex\CS460Assignment1\arm_polygons.npy')
+    for polygon in polygons:
+        # print("Generated Polygon:", polygon)
+        print(repr(polygon), end=' ')
+        #polygons_state.append(False)
+
+    #collision_checking(polygons)
+
+    fig, ax = plt.subplots(dpi=100)
+    ax.clear()  # Clear the current axes
+    ax.set_aspect('equal', 'box')
+    ax.set_xlim([0, 2])
+    ax.set_ylim([0, 2])
+
+    ax.set_aspect('equal')
+    for polygon in polygons:
+        polygon = np.concatenate((polygon, [polygon[0]]), axis=0)  # close the polygon
+        xs, ys = zip(*polygon)
+        plt.plot(xs, ys)
+
+    collided = [False, False, False, False, False]
+
+
     fig.canvas.mpl_connect('key_press_event', on_key)
 
     plot_arm(ax, J1, J2, J3, arm1, arm2)
