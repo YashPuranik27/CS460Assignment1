@@ -11,21 +11,6 @@ def load_polygons_from_file(filename):
     return [data[i] for i in range(len(data))]
 
 
-def collides_bounding_box(polygon1, polygon2):
-    # Calculate bounding boxes
-
-    print(polygon1)
-    min1, max1 = np.min(polygon1, axis=0), np.max(polygon1, axis=0)
-    min2, max2 = np.min(polygon2, axis=0), np.max(polygon2, axis=0)
-
-    # Check if bounding boxes collide
-    collide_x = min1[0] < max2[0] and max1[0] > min2[0]
-    collide_y = min1[1] < max2[1] and max1[1] > min2[1]
-    result = collide_x and collide_y
-
-    return result
-
-
 def get_occupied_cells(polygon, grid_size):
     # Return cells occupied by the polygon
     min_coords = np.min(polygon, axis=0)
@@ -68,8 +53,51 @@ def collides_Spatial_Detection(polygons, polygon_state):
     #print("colliding pairs:", colliding_pairs)
 
 
+def is_separating_axis(oa, ob, pa, pb):
+    """Checks if line perpendicular to the line segment (pa, pb) is a separating axis"""
+    perp = np.array([pa[1] - pb[1], pb[0] - pa[0]])
+    perp /= np.linalg.norm(perp)
+
+    mina, maxa = float("inf"), float("-inf")
+    minb, maxb = float("inf"), float("-inf")
+
+    for vert in oa:
+        proj = np.dot(vert, perp)
+        mina = min(mina, proj)
+        maxa = max(maxa, proj)
+
+    for vert in ob:
+        proj = np.dot(vert, perp)
+        minb = min(minb, proj)
+        maxb = max(maxb, proj)
+
+    return maxa < minb or maxb < mina
 
 
+#Checks if polygons OA and OB collide using the Separating Axis Theorem"
+def collides_SAT(poly1, poly2):
+
+    for i in range(len(poly1)):
+        if is_separating_axis(poly1, poly2, poly1[i], poly1[(i + 1) % len(poly1)]):
+            return False
+    for i in range(len(poly2)):
+        if is_separating_axis(poly1, poly2, poly2[i], poly2[(i + 1) % len(poly2)]):
+            return False
+    return True
+
+def collides_bounding_box(polygon1, polygon2):
+    # Calculate bounding boxes
+
+    print(polygon1)
+    min1, max1 = np.min(polygon1, axis=0), np.max(polygon1, axis=0)
+    min2, max2 = np.min(polygon2, axis=0), np.max(polygon2, axis=0)
+
+    # Check if bounding boxes collide
+    collide_x = min1[0] < max2[0] and max1[0] > min2[0]
+    collide_y = min1[1] < max2[1] and max1[1] > min2[1]
+    result = collide_x and collide_y
+
+    return result
 
 def collides_Spatial_Detection_2Pass(polygons, polygon_state):
 
@@ -171,13 +199,15 @@ def main():
 
 
     # fist pass bounding box checking
-    for i in range(len(polygons)-1):
+    for i in range(len(polygons)):
         poly1 = polygons[i]
         print("poly1 -- " + str(i))
         for j in range(i + 1, len(polygons)):
             poly2 = polygons[j]
             print("poly2 -- " + str(j))
-            check_result = collides_bounding_box(poly1, poly2)
+            #check_result = collides_bounding_box(poly1, poly2)
+
+            check_result = collides_SAT(poly1, poly2)
             #plot(poly1, poly2, check_result)
 
             if check_result == True:
@@ -185,11 +215,11 @@ def main():
                 polygons_state[j] = True
     
 
-
+    '''
     # second pass Spatial Partition
 
     polygons_pair=[]
-    collides_Spatial_Detection_2Pass(polygons, polygons_state)
+    collides_Spatial_Detection_2Pass(polygons, polygons_state)'''
 
     # All the program statements
     stop = timeit.default_timer()
