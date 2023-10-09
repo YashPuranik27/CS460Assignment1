@@ -2,6 +2,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
+import timeit
 
 
 # read polygon info from file
@@ -44,7 +45,36 @@ def get_occupied_cells(polygon, grid_size):
 def collides_Spatial_Detection(polygons, polygon_state):
 
     # Grid configuration
-    grid_size = 2  # Size of each grid cell
+    grid_size = 0.1  # Size of each grid cell
+
+    # Map polygons to grid cells
+    grid = {}
+    for idx, polygon in enumerate(polygons):
+            for cell in get_occupied_cells(polygon, grid_size):
+                if cell not in grid:
+                    grid[cell] = []
+                grid[cell].append(idx)
+
+    # Check for collisions based on grid occupancy
+    #colliding_pairs = set()
+    for cell, occupants in grid.items():
+        if len(occupants) > 1:
+            for i in range(len(occupants)):
+                for j in range(i + 1, len(occupants)):
+                    #colliding_pairs.add((occupants[i], occupants[j]))
+                    polygon_state[occupants[i]]=True
+                    polygon_state[occupants[j]]=True
+
+    #print("colliding pairs:", colliding_pairs)
+
+
+
+
+
+def collides_Spatial_Detection_2Pass(polygons, polygon_state):
+
+    # Grid configuration
+    grid_size = 0.1  # Size of each grid cell
 
     # Map polygons to grid cells
     grid = {}
@@ -137,6 +167,9 @@ def main():
     #poly1 = polygons[0]
     #poly2 = polygons[1]
 
+    start = timeit.default_timer()
+
+
     # fist pass bounding box checking
     for i in range(len(polygons)-1):
         poly1 = polygons[i]
@@ -150,15 +183,25 @@ def main():
             if check_result == True:
                 polygons_state[i] = True
                 polygons_state[j] = True
+    
 
-    # second pass SAT　Checking
+
+    # second pass Spatial Partition
 
     polygons_pair=[]
-    collides_Spatial_Detection(polygons, polygons_state)
+    collides_Spatial_Detection_2Pass(polygons, polygons_state)
 
+    # All the program statements
+    stop = timeit.default_timer()
+    execution_time = stop - start
+
+    print("=========\n Program Executed in ===========\n" + str(execution_time))  # It returns time in seconds
+
+
+    '''
     for i in range(len(polygons)):
         print("poly state  " + str(i) + str(polygons_state[i]))
-
+    '''
     plot(polygons, polygons_state)
 
 
