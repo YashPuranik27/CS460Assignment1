@@ -174,7 +174,7 @@ def main():
     for i in range(len(polygons)-1):
         poly1 = polygons[i]
         print("poly1 -- " + str(i))
-        for j in range(i + 1, len(polygons)-1):
+        for j in range(i + 1, len(polygons)):
             poly2 = polygons[j]
             print("poly2 -- " + str(j))
             check_result = collides_bounding_box(poly1, poly2)
