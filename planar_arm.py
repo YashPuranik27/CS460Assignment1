@@ -4,7 +4,7 @@ import matplotlib
 matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 
-from collision_checking import collides_bounding_box
+from collision_checking import collides_SAT
 from matplotlib.colors import *
 from matplotlib.patches import *
 
@@ -117,7 +117,7 @@ class PlanarArm:
     def collision_on_spawn(self, poly):
         to_delete = []
         for i, polygon in enumerate(self.polygons):
-            if collides_bounding_box(poly, polygon):
+            if collides_SAT(poly, polygon):
                 to_delete.append(i)
         self.polygons = np.delete(self.polygons, to_delete, 0)
 
@@ -125,7 +125,7 @@ class PlanarArm:
     def collides(self, polygon1, polygon2):
         self.plot_arm()
 
-        if any(collides_bounding_box(part, polygon)
+        if any(collides_SAT(part, polygon)
                for polygon in self.polygons for part in self.robot):
             self.theta1, self.theta2 = polygon1, polygon2
             self.plot_arm()
@@ -159,7 +159,7 @@ class PlanarArm:
             self.robot.clear()
             self.make_robot()
 
-            if any(collides_bounding_box(part, polygon)
+            if any(collides_SAT(part, polygon)
                    for polygon in self.polygons for part in self.robot):
                 data[x, y] = 1
 
