@@ -16,7 +16,7 @@ class RigidBody:
         self.ax.set_ylim([0, 2])
         self.car = patches.Rectangle((0.5, 0.5), 0.1, 0.05, angle=0, edgecolor='black', facecolor='white')
         self.ax.add_patch(self.car)
-        self.obstacles = collision_checking.load_polygons_from_file('2d_rigid_body.npy')
+        self.obstacles = collision_checking.load_polygons_from_file('name_initials.npy')
         for ob in self.obstacles:
             self.ax.fill(ob[:, 0], ob[:, 1], 'b', alpha=0.5)
 
@@ -65,7 +65,7 @@ class RigidBody:
 
         collision = False
         for ob in self.obstacles:
-            if collision_checking.collides_bounding_box(new_rect, ob):
+            if collision_checking.collides_SAT(new_rect, ob):
                 collision = True
                 break
 
