@@ -53,20 +53,22 @@ def collides_Spatial_Detection(polygons, polygon_state):
     #print("colliding pairs:", colliding_pairs)
 
 
-def is_separating_axis(oa, ob, pa, pb):
-    """Checks if line perpendicular to the line segment (pa, pb) is a separating axis"""
-    perp = np.array([pa[1] - pb[1], pb[0] - pa[0]])
-    perp /= np.linalg.norm(perp)
+def is_separating_axis(poly1, poly2, polya, polyb):
+    """Checks if line perpendicular to the line segment (polya, polyb) is a separating axis"""
+    perp = np.array([polya[1] - polyb[1], polyb[0] - polya[0]])
+
+    # normalize
+    # perp /= np.linalg.norm(perp)
 
     mina, maxa = float("inf"), float("-inf")
     minb, maxb = float("inf"), float("-inf")
 
-    for vert in oa:
+    for vert in poly1:
         proj = np.dot(vert, perp)
         mina = min(mina, proj)
         maxa = max(maxa, proj)
 
-    for vert in ob:
+    for vert in poly2:
         proj = np.dot(vert, perp)
         minb = min(minb, proj)
         maxb = max(maxb, proj)
