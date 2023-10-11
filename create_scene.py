@@ -77,49 +77,49 @@ def construct_name_inital_polygons():
     #### letter Y
     name_polygons = []
     name_poly=[]
-    name_poly.append([4.09, 14.3])
-    name_poly.append([2.37, 13.14])
-    name_poly.append([6.71, 6.78])
-    name_poly.append([8.37, 8.46])
+    name_poly.append([4.09/15, 14.3/15])
+    name_poly.append([2.37/15, 13.14/15])
+    name_poly.append([6.71/15, 6.78/15])
+    name_poly.append([8.37/15, 8.46/15])
     name_polygons.append(name_poly)
 
     name_poly=[]
-    name_poly.append([13.25, 13.78])
-    name_poly.append([15.15, 12.26])
-    name_poly.append([9.67, 6.62])
-    name_poly.append([8.37, 8.46])
+    name_poly.append([13.25/15, 13.78/15])
+    name_poly.append([15.15/15, 12.26/15])
+    name_poly.append([9.67/15, 6.62/15])
+    name_poly.append([8.37/15, 8.46/15])
     name_polygons.append(name_poly)
 
     name_poly=[]
-    name_poly.append([6.71, 6.78])
-    name_poly.append([8.37, 8.46])
-    name_poly.append([9.67, 6.62])
-    name_poly.append([9.53, 0])
-    name_poly.append([6.55, 0])
+    name_poly.append([6.71/15, 6.78/15])
+    name_poly.append([8.37/15, 8.46/15])
+    name_poly.append([9.67/15, 6.62/15])
+    name_poly.append([9.53/15, 0])
+    name_poly.append([6.55/15, 0])
     name_polygons.append(name_poly)
 
     ### letter A
     name_poly = []
-    name_poly.append([18.53, 6.96])
-    name_poly.append([21.08, 7.02])
-    name_poly.append([21.62, 5.04])
-    name_poly.append([17.85, 5.09])
+    name_poly.append([18.53/15, 6.96/15])
+    name_poly.append([21.08/15, 7.02/15])
+    name_poly.append([21.62/15, 5.04/15])
+    name_poly.append([17.85/15, 5.09/15])
     name_polygons.append(name_poly)
 
     name_poly = []
-    name_poly.append([18.55, 13.62])
-    name_poly.append([19.91, 13.62])
-    name_poly.append([20.0, 11.0])
-    name_poly.append([16.0, 0.0])
-    name_poly.append([13.73, 0.0])
+    name_poly.append([18.55/15, 13.62/15])
+    name_poly.append([19.91/15, 13.62/15])
+    name_poly.append([20.0/15, 11.0/15])
+    name_poly.append([16.0/15, 0.0])
+    name_poly.append([13.73/15, 0.0])
     name_polygons.append(name_poly)
 
     name_poly = []
-    name_poly.append([25.0, 0.0])
-    name_poly.append([23.0, 0.0])
-    name_poly.append([20.0, 11.0])
-    name_poly.append([19.91, 13.62])
-    name_poly.append([21.49, 13.68])
+    name_poly.append([25.0/15, 0.0])
+    name_poly.append([23.0/15, 0.0])
+    name_poly.append([20.0/15, 11.0/15])
+    name_poly.append([19.91/15, 13.62/15])
+    name_poly.append([21.49/15, 13.68/15])
 
     name_polygons.append(name_poly)
 
